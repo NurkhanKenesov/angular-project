@@ -1,4 +1,4 @@
-import { Component } from '@angular/core';
+import { Component, signal } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink, RouterLinkActive } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -10,12 +10,10 @@ import { FormsModule } from '@angular/forms';
   template: `
     <header class="header">
       <div class="container">
-        <!-- Logo -->
         <div class="logo">
-          <a routerLink="/" class="logo-text">LOGO</a>
+          <a routerLink="/" class="logo-text">ONAISELL</a>
         </div>
 
-        <!-- Search Bar -->
         <div class="search-bar">
           <input type="text" placeholder="Поиск" class="search-input">
           <button class="search-button">
@@ -23,34 +21,42 @@ import { FormsModule } from '@angular/forms';
           </button>
         </div>
 
-        <!-- Add Advertisement Button -->
         <button class="add-ad-button">
           <i class="fas fa-plus"></i>
           Добавить объявление
         </button>
 
-        <!-- Categories Dropdown -->
         <div class="dropdown">
           <button class="dropdown-button">
             Категории
-            <i class="fas fa-chevron-down"></i>
           </button>
         </div>
 
-        <!-- Favorites -->
         <a routerLink="/favorites" class="favorites">
           <i class="fas fa-heart"></i>
           Избранное
         </a>
 
-        <!-- User Profile -->
-        <div class="dropdown">
-          <button class="dropdown-button user-button">
-            <i class="fas fa-user"></i>
-            Имя
-            <i class="fas fa-chevron-down"></i>
-          </button>
-        </div>
+        @if (isLoggedIn()) {
+          <div class="dropdown">
+            <button class="dropdown-button user-button" (click)="toggleDropdown()">
+              <i class="fas fa-user"></i>
+              Профиль
+            </button>
+            @if (showDropdown) {
+              <div class="dropdown-menu">
+                <a routerLink="/profile">Мой профиль</a>
+                <a routerLink="/settings">Настройки</a>
+                <a (click)="logout()">Выйти</a>
+              </div>
+            }
+          </div>
+        } @else {
+          <div class="auth-buttons">
+            <a routerLink="/login" class="login-button">Войти</a>
+            <a routerLink="/signup" class="signup-button">Регистрация</a>
+          </div>
+        }
       </div>
     </header>
   `,
@@ -144,6 +150,30 @@ import { FormsModule } from '@angular/forms';
       font-size: 0.9rem;
     }
 
+    .dropdown-menu {
+      position: absolute;
+      right: 0;
+      top: 100%;
+      background: white;
+      border: 1px solid #e0e0e0;
+      border-radius: 4px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      z-index: 1001;
+      display: flex;
+      flex-direction: column;
+      min-width: 150px;
+    }
+
+    .dropdown-menu a {
+      padding: 0.5rem 1rem;
+      text-decoration: none;
+      color: #333;
+    }
+
+    .dropdown-menu a:hover {
+      background: #f5f5f5;
+    }
+
     .favorites {
       display: flex;
       align-items: center;
@@ -163,6 +193,28 @@ import { FormsModule } from '@angular/forms';
       gap: 0.5rem;
     }
 
+    .auth-buttons {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .login-button, .signup-button {
+      padding: 0.5rem 1rem;
+      border-radius: 4px;
+      text-decoration: none;
+      font-size: 0.9rem;
+    }
+
+    .login-button {
+      color: #333;
+      border: 1px solid #e0e0e0;
+    }
+
+    .signup-button {
+      background-color: #4CAF50;
+      color: white;
+    }
+
     /* Responsive adjustments */
     @media (max-width: 768px) {
       .container {
@@ -177,4 +229,17 @@ import { FormsModule } from '@angular/forms';
     }
   `]
 })
-export class HeaderComponent {}
+export class HeaderComponent {
+  isLoggedIn = signal(false); // Замените на реальную проверку авторизации
+  showDropdown = false;
+
+  toggleDropdown() {
+    this.showDropdown = !this.showDropdown;
+  }
+
+  logout() {
+    this.isLoggedIn.set(false);
+    this.showDropdown = false;
+    // Добавьте здесь вызов API для выхода, если нужно
+  }
+}
